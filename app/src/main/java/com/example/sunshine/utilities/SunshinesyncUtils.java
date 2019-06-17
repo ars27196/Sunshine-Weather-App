@@ -1,4 +1,4 @@
-package com.example.sunshine.Utilities;
+package com.example.sunshine.utilities;
 
 import android.content.Context;
 import android.content.Intent;

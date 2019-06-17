@@ -1,21 +1,16 @@
 package com.example.sunshine;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,16 +19,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sunshine.Utilities.NetworkUtils;
-import com.example.sunshine.Utilities.OpenWeatherJsonUtils;
-import com.example.sunshine.Utilities.SunshinesyncUtils;
-import com.example.sunshine.data.SunshinePreferences;
-import com.example.sunshine.database.WeatherDao;
+import com.example.sunshine.utilities.SunshinesyncUtils;
 import com.example.sunshine.database.WeatherData;
 import com.example.sunshine.database.WeatherDatabase;
-import com.example.sunshine.sync.SunshineSyncTask;
+import com.example.sunshine.viewModel.WeatherViewModel;
 
-import java.net.URL;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
@@ -44,8 +34,6 @@ public class MainActivity extends AppCompatActivity implements
     private ProgressBar mLoadingIndicator;
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
-    private static final int FORECAST_LOADER_ID = 0;
-    private WeatherDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,18 +53,25 @@ public class MainActivity extends AppCompatActivity implements
         mRecyclerView.setHasFixedSize(true);
         mForecastAdapter = new ForecastAdapter(this);
         mRecyclerView.setAdapter(mForecastAdapter);
-        database = WeatherDatabase.getInstance(getApplicationContext());
-        LiveData<List<WeatherData>> getWeather = database.myDao().retrieveWeather();
-        getWeather.observe(this, new Observer<List<WeatherData>>() {
+        setupViewModel();
+
+
+    }
+
+
+
+    private void setupViewModel() {
+        WeatherViewModel viewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
+
+        viewModel.getmWeatherData().observe(this, new Observer<List<WeatherData>>() {
+
             @Override
             public void onChanged(@Nullable List<WeatherData> weatherData) {
                 mForecastAdapter.setWeatherData(weatherData);
-                mRecyclerView.setAdapter(mForecastAdapter);            }
+                mRecyclerView.setAdapter(mForecastAdapter);
+            }
+
         });
-//        mForecastAdapter.setWeatherData(getWeather);
-//        mRecyclerView.setAdapter(mForecastAdapter);
-
-
     }
 
 
@@ -105,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements
         if (id == R.id.action_refresh) {
             invalidateData();
             SunshinesyncUtils.startImmediateSync(this);
+
 //            mForecastAdapter.setWeatherData(weather);
 //            mRecyclerView.setAdapter(mForecastAdapter);
             return true;
