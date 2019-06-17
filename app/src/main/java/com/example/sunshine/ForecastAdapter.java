@@ -21,17 +21,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.sunshine.database.WeatherData;
+import com.example.sunshine.utilities.SunshineDateUtils;
+import com.example.sunshine.utilities.SunshineWeatherUtils;
 
 import java.util.List;
 
 public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ForecastAdapterViewHolder> {
 
     private List<WeatherData> mWeatherData;
-
-
+    private static final int VIEW_TYPE_TODAY = 0;
+    private static final int VIEW_TYPE_FUTURE_DAY = 1;
+    private boolean mUseTodayLayout;
     private final ForecastAdapterOnClickHandler mClickHandler;
 
 
@@ -46,11 +50,20 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
 
 
     public class ForecastAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
-        public final TextView mWeatherTextView;
+        final ImageView iconView;
+
+        final TextView dateView;
+        final TextView descriptionView;
+        final TextView highTempView;
+        final TextView lowTempView;
 
         public ForecastAdapterViewHolder(View view) {
             super(view);
-            mWeatherTextView = (TextView) view.findViewById(R.id.tv_weather_data);
+            iconView = (ImageView) view.findViewById(R.id.weather_icon);
+            dateView = (TextView) view.findViewById(R.id.date);
+            descriptionView = (TextView) view.findViewById(R.id.weather_description);
+            highTempView = (TextView) view.findViewById(R.id.high_temperature);
+            lowTempView = (TextView) view.findViewById(R.id.low_temperature);
             view.setOnClickListener(this);
         }
 
@@ -63,10 +76,10 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         }
     }
 
-
+    Context context;
     @Override
     public ForecastAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        Context context = viewGroup.getContext();
+         context = viewGroup.getContext();
         int layoutIdForListItem = R.layout.forecast_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
@@ -78,9 +91,66 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
     @Override
     public void onBindViewHolder(ForecastAdapterViewHolder forecastAdapterViewHolder, int position) {
         WeatherData weatherForThisDay = mWeatherData.get(position);
-        forecastAdapterViewHolder.mWeatherTextView.setText(weatherForThisDay.getDay()+" "+weatherForThisDay.getWeatherType()+" "+weatherForThisDay.getWeatherHigh()+" "+weatherForThisDay.getWeatherLow()+" ");
+
+        forecastAdapterViewHolder.descriptionView.setText(weatherForThisDay.getWeatherType());
+        forecastAdapterViewHolder.lowTempView.setText(weatherForThisDay.getWeatherLow());
+        forecastAdapterViewHolder.descriptionView.setText(weatherForThisDay.getWeatherType());
+        forecastAdapterViewHolder.dateView.setText(weatherForThisDay.getDay());
+
+        //setting weather Icon
+        int viewType = getItemViewType(position);
+        int weatherImageId;
+        int weatherId=mWeatherData.get(position).getWeatherId();
+
+        switch (viewType) {
+
+            case VIEW_TYPE_TODAY:
+                weatherImageId = SunshineWeatherUtils
+                        .getLargeArtResourceIdForWeatherCondition(weatherId);
+                break;
+
+            case VIEW_TYPE_FUTURE_DAY:
+                weatherImageId = SunshineWeatherUtils
+                        .getSmallArtResourceIdForWeatherCondition(weatherId);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid view type, value of " + viewType);
+        }
+
+        forecastAdapterViewHolder.iconView.setImageResource(weatherImageId);
+
+        long dateInMillis = Long.parseLong(mWeatherData.get(position).getDay());
+
+        //setting date
+        String dateString = SunshineDateUtils.getFriendlyDateString(context, dateInMillis, false);
+        forecastAdapterViewHolder.dateView.setText(dateString);
+
+        //setting weather description
+        String description = SunshineWeatherUtils.getStringForWeatherCondition(context, weatherId);
+        forecastAdapterViewHolder.descriptionView.setText(description);
+
+        //setting high and low temperatures
+
+        double highInCelsius = Double.parseDouble(mWeatherData.get(position).getWeatherHigh());
+        String highString = SunshineWeatherUtils.formatTemperature(context, highInCelsius);
+        forecastAdapterViewHolder.highTempView.setText(highString);
+
+        double lowInCelsius = Double.parseDouble(mWeatherData.get(position).getWeatherLow());
+        String lowString = SunshineWeatherUtils.formatTemperature(context, lowInCelsius);
+        forecastAdapterViewHolder.lowTempView.setText(lowString);
+
     }
 
+    @Override
+    public int getItemViewType(int position) {
+
+        if ( position == 0) {
+            return VIEW_TYPE_TODAY;
+        } else {
+            return VIEW_TYPE_FUTURE_DAY;
+        }
+    }
 
     @Override
     public int getItemCount() {

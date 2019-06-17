@@ -9,12 +9,20 @@ import android.support.annotation.Nullable;
 @Entity(tableName = "weather")
 public class WeatherData {
 
-    @PrimaryKey (autoGenerate = true)
+    @PrimaryKey(autoGenerate = true)
     private int id;
     private String day;
     private String weatherType;
     private String weatherHigh;
     private String weatherLow;
+    private String pressure;
+    private String humidity;
+    private String windSpeed,windDirection;
+private int weatherId;
+    @Ignore
+    public WeatherData() {
+
+    }
 
     @Ignore
     public WeatherData(String day, String weatherType, String weatherHigh, String weatherLow) {
@@ -24,14 +32,18 @@ public class WeatherData {
         this.weatherLow = weatherLow;
     }
 
-    public WeatherData(int id,String day, String weatherType, String weatherHigh, String weatherLow) {
-        this.id=id;
+    public WeatherData(int id, String day, String weatherType, String weatherHigh, String weatherLow, String pressure, String humidity, String windSpeed, String windDirection, int weatherId) {
+        this.id = id;
         this.day = day;
         this.weatherType = weatherType;
         this.weatherHigh = weatherHigh;
         this.weatherLow = weatherLow;
+        this.pressure = pressure;
+        this.humidity = humidity;
+        this.windSpeed = windSpeed;
+        this.windDirection = windDirection;
+        this.weatherId = weatherId;
     }
-
 
     public String getDay() {
         return day;
@@ -73,4 +85,43 @@ public class WeatherData {
         this.id = id;
     }
 
+    public String getPressure() {
+        return pressure;
+    }
+
+    public void setPressure(String pressure) {
+        this.pressure = pressure;
+    }
+
+    public String getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(String humidity) {
+        this.humidity = humidity;
+    }
+
+    public String getWindSpeed() {
+        return windSpeed;
+    }
+
+    public void setWindSpeed(String windSpeed) {
+        this.windSpeed = windSpeed;
+    }
+
+    public String getWindDirection() {
+        return windDirection;
+    }
+
+    public void setWindDirection(String windDirection) {
+        this.windDirection = windDirection;
+    }
+
+    public int getWeatherId() {
+        return weatherId;
+    }
+
+    public void setWeatherId(int weatherId) {
+        this.weatherId = weatherId;
+    }
 }

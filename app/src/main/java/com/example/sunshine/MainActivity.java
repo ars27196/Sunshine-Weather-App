@@ -4,7 +4,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 
 import com.example.sunshine.utilities.SunshinesyncUtils;
 import com.example.sunshine.database.WeatherData;
-import com.example.sunshine.database.WeatherDatabase;
 import com.example.sunshine.viewModel.WeatherViewModel;
 
 import java.util.List;
@@ -38,12 +36,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_forecast);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_forecast);
 
         SunshinesyncUtils.startImmediateSync(this);
 
-        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         LinearLayoutManager layoutManager

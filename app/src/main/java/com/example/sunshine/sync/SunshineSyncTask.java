@@ -1,5 +1,6 @@
 package com.example.sunshine.sync;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.widget.Toast;
 
@@ -18,20 +19,18 @@ public class SunshineSyncTask {
         String locationQuery = SunshinePreferences
                 .getPreferredWeatherLocation(context);
 
-        URL weatherRequestUrl = NetworkUtils.buildUrl(locationQuery);
+        URL weatherRequestUrl = NetworkUtils.getUrl(context);
 
         try {
-            String jsonWeatherResponse = NetworkUtils
-                    .getResponseFromHttpUrl(weatherRequestUrl);
+            String jsonWeatherResponse = NetworkUtils.getResponseFromHttpUrl(weatherRequestUrl);
 
-            List<WeatherData> simpleJsonWeatherData = OpenWeatherJsonUtils
-                    .getSimpleWeatherStringsFromJson(context, jsonWeatherResponse);
+            List<WeatherData> weatherData = OpenWeatherJsonUtils
+                    .getWeatherListFromJson(context, jsonWeatherResponse);
 
-
-            if (simpleJsonWeatherData != null && simpleJsonWeatherData.size() != 0) {
+            if (weatherData != null && weatherData.size() != 0) {
                 WeatherDatabase.getInstance(context).myDao().deleteWeatherItems();
 
-                for (WeatherData weatherdata : simpleJsonWeatherData) {
+                for (WeatherData weatherdata : weatherData) {
                     WeatherDatabase.getInstance(context).myDao().addWeather(weatherdata);
 
                 }
