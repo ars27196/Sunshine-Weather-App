@@ -8,7 +8,6 @@ import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.example.sunshine.database.WeatherData;
 import com.example.sunshine.databinding.ActivityDetailBinding;
@@ -20,7 +19,6 @@ public class DetailActivity extends AppCompatActivity {
     private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
     private Context context;
     private WeatherData mForecast;
-    private TextView mWeatherDisplay;
     private ActivityDetailBinding mDetailBinding;
     private String mForecastSummary;
 

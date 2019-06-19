@@ -4,10 +4,12 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -18,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sunshine.data.SunshinePreferences;
 import com.example.sunshine.utilities.SunshinesyncUtils;
 import com.example.sunshine.database.WeatherData;
 import com.example.sunshine.viewModel.WeatherViewModel;
@@ -25,22 +28,25 @@ import com.example.sunshine.viewModel.WeatherViewModel;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
-        ForecastAdapter.ForecastAdapterOnClickHandler {
+        ForecastAdapter.ForecastAdapterOnClickHandler,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     // COMPLETED (1) Create a field to store the weather display TextView
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_forecast);
-
+        context = this;
         SunshinesyncUtils.startImmediateSync(this);
-
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         LinearLayoutManager layoutManager
@@ -55,7 +61,12 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
 
     private void setupViewModel() {
         WeatherViewModel viewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
@@ -107,6 +118,11 @@ public class MainActivity extends AppCompatActivity implements
             return true;
         }
 
+        if (id == R.id.action_settings) {
+            Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+            startActivity(startSettingsActivity);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -116,14 +132,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(WeatherData weatherForDay) {
-        Context context = this;
         Intent intentToStartDetailActivity = new Intent(context, DetailActivity.class);
         Constant.currentSelected = weatherForDay;
         startActivity(intentToStartDetailActivity);
     }
 
     private void openLocationInMap() {
-        String addressString = "Islamabad, PK";
+        String addressString = SunshinePreferences.getPreferredWeatherLocation(context);
         Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -139,4 +154,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        setupViewModel();
+        Constant.PREFERENCES_HAVE_BEEN_UPDATED = true;
+    }
 }
